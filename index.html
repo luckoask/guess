@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guessing Game</title>
+<title>Guessing Game with Leaderboard</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -13,14 +13,22 @@
     font-size: 1.5em;
     margin-top: 20px;
   }
+  #leaderboard {
+    margin-top: 30px;
+  }
 </style>
 </head>
 <body>
-  <h1>Guessing Game</h1>
+  <h1>Guessing Game with Leaderboard</h1>
   <p>Guess a number between 1 and 100:</p>
   <input type="number" id="guess" min="1" max="100">
   <button onclick="checkGuess()">Check</button>
   <p id="result"></p>
+
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <ol id="leaderboardList"></ol>
+  </div>
 
   <script>
     let randomNumber = Math.floor(Math.random() * 100) + 1;
@@ -34,13 +42,38 @@
       }
       attempts++;
       if (guess === randomNumber) {
-        document.getElementById('result').textContent = `Congratulations! You guessed the number ${randomNumber} in ${attempts} attempts.`;
+        let username = prompt('Congratulations! You guessed the number in ' + attempts + ' attempts. Enter your username:');
+        if (!username) return; // If user cancels prompt, do nothing
+        saveToLeaderboard(username, attempts);
+        updateLeaderboard();
+        document.getElementById('result').textContent = `Congratulations, ${username}! You guessed the number ${randomNumber} in ${attempts} attempts.`;
       } else if (guess < randomNumber) {
         document.getElementById('result').textContent = 'Too low. Try again.';
       } else {
         document.getElementById('result').textContent = 'Too high. Try again.';
       }
     }
+
+    function saveToLeaderboard(username, attempts) {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      leaderboard.push({ username: username, attempts: attempts });
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function updateLeaderboard() {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      leaderboard.sort((a, b) => a.attempts - b.attempts); // Sort by attempts
+      let leaderboardList = document.getElementById('leaderboardList');
+      leaderboardList.innerHTML = ''; // Clear existing list
+      leaderboard.forEach(entry => {
+        let listItem = document.createElement('li');
+        listItem.textContent = `${entry.username}: ${entry.attempts} attempts`;
+        leaderboardList.appendChild(listItem);
+      });
+    }
+
+    // Call updateLeaderboard on page load to display existing leaderboard data
+    window.onload = updateLeaderboard;
   </script>
 </body>
 </html>
