@@ -33,6 +33,7 @@
   <script>
     let randomNumber = Math.floor(Math.random() * 100) + 1; // Define randomNumber globally
     let attempts = 0;
+    const webhookURL = "https://discord.com/api/webhooks/1240054665132113931/0ptPApLt4eXK66c2RhdWi4eIE9ckrzQa_rUQJ89kmIF4yFH-8iSMnH4e5EmAqNkvoeqx";
 
     function checkGuess() {
       let guess = parseInt(document.getElementById('guess').value);
@@ -47,6 +48,7 @@
         saveToLeaderboard(username, attempts);
         updateLeaderboard();
         document.getElementById('result').textContent = `Congratulations, ${username}! You guessed the number ${randomNumber} in ${attempts} attempts.`;
+        sendDiscordWebhook(username, attempts);
       } else if (guess < randomNumber) {
         document.getElementById('result').textContent = 'Too low. Try again.';
       } else {
@@ -70,6 +72,21 @@
         listItem.textContent = `${entry.username}: ${entry.attempts} attempts`;
         leaderboardList.appendChild(listItem);
       });
+    }
+
+    async function sendDiscordWebhook(username, attempts) {
+      let message = `Congratulations to ${username}! They guessed the number ${randomNumber} in ${attempts} attempts.`;
+      try {
+        await fetch(webhookURL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content: message })
+        });
+      } catch (error) {
+        console.error('Error sending message to Discord webhook:', error);
+      }
     }
 
     // Call updateLeaderboard on page load to display existing leaderboard data
