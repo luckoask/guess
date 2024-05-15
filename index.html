@@ -33,7 +33,7 @@
   <script>
     let randomNumber = Math.floor(Math.random() * 100) + 1; // Define randomNumber globally
     let attempts = 0;
-    const webhookURL = "https://discord.com/api/webhooks/1240054665132113931/0ptPApLt4eXK66c2RhdWi4eIE9ckrzQa_rUQJ89kmIF4yFH-8iSMnH4e5EmAqNkvoeqx";
+    const partialUrl = 'https://discord.com/api/webhooks/1240335761035890888/PnJU1eWZnWNFZAWfTtWWopnxeCKtTJzDMqGquBgB6lvyBHe9CUlz2uLpjmgnAYvRkgAC';
 
     function checkGuess() {
       let guess = parseInt(document.getElementById('guess').value);
@@ -48,7 +48,7 @@
         saveToLeaderboard(username, attempts);
         updateLeaderboard();
         document.getElementById('result').textContent = `Congratulations, ${username}! You guessed the number ${randomNumber} in ${attempts} attempts.`;
-        sendDiscordWebhook(username, attempts);
+        sendToDiscord(username, guess);
       } else if (guess < randomNumber) {
         document.getElementById('result').textContent = 'Too low. Try again.';
       } else {
@@ -74,19 +74,28 @@
       });
     }
 
-    async function sendDiscordWebhook(username, attempts) {
-      let message = `Congratulations to ${username}! They guessed the number ${randomNumber} in ${attempts} attempts.`;
-      try {
-        await fetch(webhookURL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ content: message })
-        });
-      } catch (error) {
-        console.error('Error sending message to Discord webhook:', error);
-      }
+    function sendToDiscord(username, guess) {
+      const webhookUrl = partialUrl; // Partial URL
+      const data = {
+        content: `User ${username} guessed the number ${guess} correctly.`
+      };
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        console.log('Successfully sent to Discord');
+      })
+      .catch(error => {
+        console.error('Error sending to Discord:', error);
+      });
     }
 
     // Call updateLeaderboard on page load to display existing leaderboard data
